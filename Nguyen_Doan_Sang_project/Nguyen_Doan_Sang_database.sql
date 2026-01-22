@@ -25,6 +25,15 @@ create table customer
 
 );
 
+create table invoice
+(
+    id           serial primary key,
+    customer_id  int references customer (id),
+    created_at   timestamp default current_timestamp,
+    total_amount decimal(12, 2) not null
+
+);
+
 /* Tạo Function getAllCustomer*/
 create or replace function get_all_customer()
     returns table
@@ -64,6 +73,25 @@ begin
 end;
 $$ language plpgsql;
 
+/* Tạo Function getAllInvoice*/
+create or replace function get_all_invoice()
+    returns table
+            (
+
+                id           int,
+                customer_id  int,
+                created_at   timestamp,
+                total_amount decimal
+            )
+    language plpgsql
+as
+$$
+begin
+    return query
+        select i.id, i.customer_id, i.created_at, i.total_amount from invoice i order by i.id;
+end;
+$$;
+
 /* Tạo Procedure add_Product*/
 create or replace procedure add_product(
     p_name varchar(100),
@@ -90,6 +118,18 @@ as
 $$
 begin
     insert into customer(name, phone, email, address) values (c_name, c_phone, c_email, c_address);
+end;
+$$;
+/* Tạo Procedure add_Invoice*/
+create or replace procedure add_invoice(
+    customer_id_in int,
+    total_amount_int double precision
+)
+    language plpgsql
+as
+$$
+begin
+    insert into invoice(customer_id, total_amount) VALUES (customer_id_in, total_amount_int);
 end;
 $$;
 /* Tạo Function get_customer_by_id*/
